@@ -53,4 +53,4 @@ namespace GymManagementSystem.DAL.Repositories.Classes
         }
     }
 }
-}
+

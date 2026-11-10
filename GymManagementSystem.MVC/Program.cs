@@ -1,4 +1,7 @@
 using GymManagementSystem.DAL.Data.Contexts;
+using GymManagementSystem.DAL.Repositories.Classes;
+using GymManagementSystem.DAL.Repositories.interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace GymManagementSystem.MVC
 {
@@ -18,9 +21,15 @@ namespace GymManagementSystem.MVC
             builder.Services.AddControllersWithViews();
 
             // add to clr the gymdbcontext to the dependency injection container
-            builder.Services.AddDbContext<GymDbContext>();
+            builder.Services.AddDbContext<GymDbContext>(options =>
+            {
+                //options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"]);
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+            });
+
+            builder.Services.AddScoped<IPlanRepository, PlanRepository>();
             
-            var app = builder.Build();
+            var app = builder.Build();  
 
             // ── PART 2: the pipeline — the middleware each request passes through ──
             // Configure the HTTP request pipeline.

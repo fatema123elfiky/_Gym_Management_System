@@ -7,5 +7,9 @@
         public int DurationDays { get; set; }
         public decimal Price { get; set; }
         public bool IsActive { get; set; }   // soft-delete flag
+       
+        // one to many relationship with MemberShip
+        public ICollection<MemberShip> MemberShips { get; set; } = default!;
+
     }
 }
