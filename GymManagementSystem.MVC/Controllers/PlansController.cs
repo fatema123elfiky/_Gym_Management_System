@@ -1,16 +1,17 @@
 ﻿
 using GymManagementSystem.DAL.Repositories.interfaces;
-using GymManagementSystem.DAL.Repositories.Classes;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using GymManagementSystem.DAL.Data.Contexts;
+using GymManagementSystem.DAL.Models;
 
 namespace GymManagementSystem.MVC.Controllers
 {
     public class PlansController : Controller
     {
-        private IPlanRepository _PlanRepository;
-        public PlansController(IPlanRepository planRepository)
+        // before
+        //private IPlanRepository _PlanRepository;
+        //after
+        private IRepository<Plan> _PlanRepository;
+        public PlansController(IRepository<Plan> planRepository)
         {
             // still problem as should be dependency injection and not creating instance of repository here
             // controller should not communicate with DAL , should communicate with service layer
