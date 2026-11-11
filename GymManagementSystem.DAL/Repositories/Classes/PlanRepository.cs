@@ -10,47 +10,28 @@ using System.Threading.Tasks;
 
 namespace GymManagementSystem.DAL.Repositories.Classes
 {
-    public class PlanRepository : IPlanRepository
+    public class PlanRepository : Repository<Plan>, IPlanRepository
     {
 
-        private readonly GymDbContext _dbContext;
 
-        public PlanRepository(GymDbContext dbContext)
+
+        public PlanRepository(GymDbContext dbContext) : base(dbContext)
         {
             // wrong one the dbcontext should be injected as dependency injection and not creating instance of dbcontext here
             //_dbContext = new GymDbContext();
 
-            _dbContext = dbContext;
+            // before
+            // _dbContext = dbContext;
+            //after
+            //nothing !! , it is initailized by parent
 
         }
-        public async Task<int> AddAsync(Plan plan)
+        // only 
+        public async Task<IEnumerable<Plan>> GetAllWithMemberShipAsync(bool tracking = false)
         {
+            return tracking ? await _dbContext.Plans.Include(x => x.MemberShips).ToListAsync() : await _dbContext.Plans.Include(x => x.MemberShips).AsNoTracking().ToListAsync();
 
-            await _dbContext.Plans.AddAsync(plan);
-            return await _dbContext.SaveChangesAsync();
-        }
-
-        public Task<int> DeleteAsync(Plan plan)
-        {
-            _dbContext.Plans.Remove(plan);
-            return _dbContext.SaveChangesAsync();
-        }
-
-        public async Task<IEnumerable<Plan>> GetAllAsync(bool tracking = false)
-        {
-            return tracking ? await _dbContext.Plans.ToListAsync() : await _dbContext.Plans.AsNoTracking().ToListAsync();
-        }
-
-        public async Task<Plan?> GetByIdAsync(int id)
-        {
-            return await _dbContext.Plans.FindAsync(id);
-        }
-
-        public async Task<int> UpdateAsync(Plan plan)
-        {
-            _dbContext.Plans.Update(plan);
-            return await _dbContext.SaveChangesAsync();
         }
     }
 }
-}
+
