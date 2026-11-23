@@ -41,8 +41,38 @@ namespace GymManagementSystem.PL.Controllers
             // 2) Business rules (service)
             bool created = await _memberService.AddMemberAsync(model);
 
-            if (created) return RedirectToAction(nameof(Index));
+            if (created)
+            {
+                TempData["SuccessMessage"] = "Member is created successfuly";// goes from request to request which gone 
+                return RedirectToAction(nameof(Index));
+            }
+            TempData["ErrorMessage"] = "Member creation failed";
             return View(nameof(Create), model);// takes name of view , model
+        }
+
+        public async Task<IActionResult> Details(int ? Id)
+        {
+            var member = await _memberService.GetMemberAsync(Id);
+            if(member == null)
+            {
+                TempData["ErrorMessage"] = "Member Not found";
+                return RedirectToAction(nameof(Index));
+
+            }
+
+            return View(member);
+        }
+
+        public async Task<IActionResult> HealthRecordDetails(int ? Id)
+        {
+            var healthrecord = await _memberService.GetHealthRecordDetails(Id);
+            if(healthrecord == null)
+            {
+                TempData["ErrorMessage"] = "Has No healthrecord";
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(healthrecord);
         }
 
 
