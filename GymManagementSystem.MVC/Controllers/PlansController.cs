@@ -10,8 +10,8 @@ namespace GymManagementSystem.MVC.Controllers
         // before
         //private IPlanRepository _PlanRepository;
         //after
-        private IRepository<Plan> _PlanRepository;
-        public PlansController(IRepository<Plan> planRepository)
+        private IPlanRepository _PlanRepository;
+        public PlansController(IPlanRepository planRepository)
         {
             // still problem as should be dependency injection and not creating instance of repository here
             // controller should not communicate with DAL , should communicate with service layer

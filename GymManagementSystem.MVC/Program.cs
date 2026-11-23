@@ -1,4 +1,7 @@
+using GymManagementSystem.BLL.Services.Members.Classes;
+using GymManagementSystem.BLL.Services.Members.Interfaces;
 using GymManagementSystem.DAL.Data.Contexts;
+using GymManagementSystem.DAL.Models;
 using GymManagementSystem.DAL.Repositories.Classes;
 using GymManagementSystem.DAL.Repositories.interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -27,9 +30,18 @@ namespace GymManagementSystem.MVC
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
 
+            // before
+            //builder.Services.AddScoped<IPlanRepository, PlanRepository>();
+            //after
+            //builder.Services.AddScoped<IRepository<Plan>, Repository<Plan>>();
+            //builder.Services.AddScoped<IRepository<Member>, Repository<Member>>();
+            //builder.Services.AddScoped<IRepository<Session>, Repository<Session>>();
+            // instead of many lines , we could maeke that line
+            builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>)); // whatever any entity passed to it
             builder.Services.AddScoped<IPlanRepository, PlanRepository>();
-            
-            var app = builder.Build();  
+            builder.Services.AddScoped<IMemberService, MemberService>();
+
+            var app = builder.Build();
 
             // ── PART 2: the pipeline — the middleware each request passes through ──
             // Configure the HTTP request pipeline.
