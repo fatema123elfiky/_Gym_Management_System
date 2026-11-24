@@ -12,5 +12,10 @@ namespace GymManagementSystem.BLL.Services.Members.Interfaces
         public Task<MemberDetailsViewModel?> GetMemberAsync(int? Id);
 
         public Task<HealthRecordViewModel?> GetHealthRecordDetails(int? Id);
+        
+        // we made new one as the mapping is different from details one
+        public Task<MemberToUpdateViewModel?> GetMemberToUpdateDetails(int ? Id);
+        public Task<bool> UpdateMemberAsync(MemberToUpdateViewModel model);
+
     }
 }

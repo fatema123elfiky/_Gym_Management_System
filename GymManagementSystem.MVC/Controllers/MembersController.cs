@@ -75,6 +75,34 @@ namespace GymManagementSystem.PL.Controllers
             return View(healthrecord);
         }
 
+        public async Task<IActionResult> EditMember(int ? Id)
+        {
+            var member = await _memberService.GetMemberToUpdateDetails(Id);
+            if (member == null)
+            {
+                TempData["ErrorMessage"] = "Member Not found";
+                return RedirectToAction(nameof(Index));
+
+            }
+            return View(member);
+
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditMember(MemberToUpdateViewModel model)
+        {
+            if (!ModelState.IsValid) return View(nameof(EditMember), model);// takes name of view , model
+            var result = await _memberService.UpdateMemberAsync(model);
+            if(result)
+            {
+                TempData["SuccessMessage"] = "Member is edited successfuly";// goes from request to request which gone 
+                return RedirectToAction(nameof(Index));
+            }
+            TempData["ErrorMessage"] = "Member editing failed";
+            return View(nameof(EditMember), model);
+
+        }
+
 
     }
 }

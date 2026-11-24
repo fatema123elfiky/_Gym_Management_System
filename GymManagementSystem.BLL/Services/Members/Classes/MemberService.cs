@@ -183,5 +183,60 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
 
 
         }
+
+        public async Task<MemberToUpdateViewModel?> GetMemberToUpdateDetails(int? Id)
+        {
+            if (Id == null || Id.Value == 0)
+                return null;
+            var member = await _memberRepository.GetByIdAsync(Id.Value);// as it is nullable and it should take value anyway
+            if (member == null)
+                return null;
+
+            var model = new MemberToUpdateViewModel()
+            {
+                Id = member.Id,
+                Email = member.Email,
+                Phone = member.Phone,
+                Photo = member.Photo,
+                Name = member.Name,
+                BuildingNumber = member.Address?.BuildingNumber??0,
+                City = member.Address?.City??"Not found",
+                Street = member.Address?.Street ?? "Not found"
+
+            };
+            return model;
+        }
+
+        public async Task<bool> UpdateMemberAsync(MemberToUpdateViewModel model)
+        {
+            try
+            {
+                if (model == null) return false;
+
+                var members = await _memberRepository.GetAllAsync();
+
+                bool IsNotUniquePhone = members.Any(x => x.Phone == model.Phone && x.Id != model.Id);
+                bool IsNotUniqueEmail = members.Any(x => x.Email == model.Email && x.Id != model.Id);
+
+                if (IsNotUniqueEmail || IsNotUniquePhone) return false;
+
+                var member = await _memberRepository.GetByIdAsync(model.Id);
+
+                if (member == null) return false;
+
+                member.Address.BuildingNumber = model.BuildingNumber;
+                member.Address.City = model.City;
+                member.Address.Street = model.Street;
+                member.Email = model.Email;
+                member.Phone = model.Phone;
+
+                return await _memberRepository.UpdateAsync(member) > 0;
+
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }
