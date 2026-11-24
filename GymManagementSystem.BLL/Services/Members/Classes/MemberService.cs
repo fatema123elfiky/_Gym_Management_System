@@ -13,16 +13,24 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
     public class MemberService : IMemberService
     {
         // talk to repo to deal with data and apply your bussiness logic
-        private readonly IRepository<Member> _memberRepository;
-        private readonly IRepository<MemberShip> _memberShipRepository;
-        private readonly IRepository<Plan> _planRepository;
-        private readonly IRepository<HealthRecord> _healthRecordRepository;
-        public MemberService(IRepository<Member> memberRepository ,IRepository<MemberShip> memberShip,IRepository<Plan> planRepository,IRepository<HealthRecord> healthRecordRepository)
+        //private readonly IRepository<Member> _memberRepository;
+        //private readonly IRepository<MemberShip> _memberShipRepository;
+        //private readonly IRepository<Plan> _planRepository;
+        //private readonly IRepository<HealthRecord> _healthRecordRepository;
+        //public MemberService(IRepository<Member> memberRepository ,IRepository<MemberShip> memberShip,IRepository<Plan> planRepository,IRepository<HealthRecord> healthRecordRepository)
+        //{
+        //    _memberRepository = memberRepository;
+        //    _memberShipRepository = memberShip;
+        //    _planRepository = planRepository;
+        //    _healthRecordRepository = healthRecordRepository;
+        //}
+
+        // using unit of work 
+        private readonly IUnitOfWork _unitOfWork;
+
+        public MemberService(IUnitOfWork unitOfWork)
         {
-            _memberRepository = memberRepository;
-            _memberShipRepository = memberShip;
-            _planRepository = planRepository;
-            _healthRecordRepository = healthRecordRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<bool> AddMemberAsync(CreateMemberViewModel model)
@@ -30,7 +38,7 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
             try
             {
                 // email , phone should be unique so we should cheeck here
-                var members = await _memberRepository.GetAllAsync();
+                var members = await _unitOfWork.GetRepository<Member>().GetAllAsync();
                 bool IsNotUniquePhone = members.Any(x => x.Phone == model.Phone);
                 bool IsNotUniqueEmail = members.Any(x => x.Email == model.Email);
 
@@ -58,7 +66,8 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
 
                 };
 
-                return await _memberRepository.AddAsync(member) > 0;
+                 await _unitOfWork.GetRepository<Member>().AddAsync(member) ;
+                return await _unitOfWork.SaveChangesAsync() > 0;
             }
             catch
             {
@@ -66,9 +75,20 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
             }
         }
 
+        public async Task<bool> DeleteMemberAsync(int? Id)
+        {
+            if (Id == null || Id.Value == 0) return false;
+            var member = await _unitOfWork.GetRepository<Member>().GetByIdAsync(Id.Value);
+
+            if (member == null) return false;
+
+             await _unitOfWork.GetRepository<Member>().DeleteAsync(member);
+            return await  _unitOfWork.SaveChangesAsync() > 0;
+        }
+
         public async Task<HealthRecordViewModel?> GetHealthRecordDetails(int? Id)
         {
-            var healthrecords = await _healthRecordRepository.GetAllAsync();
+            var healthrecords = await _unitOfWork.GetRepository<HealthRecord>().GetAllAsync();
             if (healthrecords != null)
             {
                 var healthrecord = healthrecords.Where(x => x.MemberId == Id).FirstOrDefault();
@@ -88,7 +108,7 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
         {
             if (Id == null || Id.Value == 0)
                 return null;
-            var member = await _memberRepository.GetByIdAsync(Id.Value);// as it is nullable and it should take value anyway
+            var member = await _unitOfWork.GetRepository<Member>().GetByIdAsync(Id.Value);// as it is nullable and it should take value anyway
             if (member == null)
                 return null;
             var model = new MemberDetailsViewModel()
@@ -121,7 +141,7 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
 
             };
 
-            var memberships = await _memberShipRepository.GetAllAsync();
+            var memberships = await _unitOfWork.GetRepository<MemberShip>().GetAllAsync();
             if (memberships.Any())
             {
                 /*
@@ -136,7 +156,7 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
                     model.MembershipStartDate = membershipsActive.CreatedAt?.ToString("d/M/yyyy"); // we added nullable as it is nullable
                     model.MembershipEndDate = membershipsActive.EndDate.ToString("d/M/yyyy");
 
-                    var plan = await _planRepository.GetByIdAsync(membershipsActive.PlanId);
+                    var plan = await _unitOfWork.GetRepository<Plan>().GetByIdAsync(membershipsActive.PlanId);
                     if (plan != null)
                         model.PlanName = plan.Name;
                 }
@@ -148,7 +168,7 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
         public async Task<IEnumerable<MemberViewModel>> GetMembersAsync()
         {
            // return await _memberRepository.GetAllAsync();
-           var members = await _memberRepository.GetAllAsync();
+           var members = await _unitOfWork.GetRepository<Member>().GetAllAsync();
             //var MemberViews = new List<MemberViewModel>();
             //// manaual mapping
 
@@ -188,7 +208,7 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
         {
             if (Id == null || Id.Value == 0)
                 return null;
-            var member = await _memberRepository.GetByIdAsync(Id.Value);// as it is nullable and it should take value anyway
+            var member = await _unitOfWork.GetRepository<Member>().GetByIdAsync(Id.Value);// as it is nullable and it should take value anyway
             if (member == null)
                 return null;
 
@@ -213,14 +233,14 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
             {
                 if (model == null) return false;
 
-                var members = await _memberRepository.GetAllAsync();
+                var members = await _unitOfWork.GetRepository<Member>().GetAllAsync();
 
                 bool IsNotUniquePhone = members.Any(x => x.Phone == model.Phone && x.Id != model.Id);
                 bool IsNotUniqueEmail = members.Any(x => x.Email == model.Email && x.Id != model.Id);
 
                 if (IsNotUniqueEmail || IsNotUniquePhone) return false;
 
-                var member = await _memberRepository.GetByIdAsync(model.Id);
+                var member = await _unitOfWork.GetRepository<Member>().GetByIdAsync(model.Id);
 
                 if (member == null) return false;
 
@@ -230,7 +250,9 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
                 member.Email = model.Email;
                 member.Phone = model.Phone;
 
-                return await _memberRepository.UpdateAsync(member) > 0;
+                 await _unitOfWork.GetRepository<Member>().UpdateAsync(member) ;
+
+                return await _unitOfWork.SaveChangesAsync() > 0;
 
             }
             catch

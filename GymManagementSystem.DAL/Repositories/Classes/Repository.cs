@@ -2,11 +2,7 @@
 using GymManagementSystem.DAL.Models;
 using GymManagementSystem.DAL.Repositories.interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace GymManagementSystem.DAL.Repositories.Classes
 {
@@ -25,17 +21,17 @@ namespace GymManagementSystem.DAL.Repositories.Classes
             _set = _dbContext.Set<TEntity>();
 
         }
-        public async Task<int> AddAsync(TEntity entity)
+        public async Task AddAsync(TEntity entity)
         {
 
             await _set.AddAsync(entity);
-            return await _dbContext.SaveChangesAsync();
+            //return await _dbContext.SaveChangesAsync();
         }
 
-        public Task<int> DeleteAsync(TEntity entity)
+        public async Task DeleteAsync(TEntity entity)
         {
             _set.Remove(entity);
-            return _dbContext.SaveChangesAsync();
+            //return _dbContext.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<TEntity>> GetAllAsync(bool tracking = false)
@@ -48,10 +44,10 @@ namespace GymManagementSystem.DAL.Repositories.Classes
             return await _set.FindAsync(id);
         }
 
-        public async Task<int> UpdateAsync(TEntity entity)
+        public async Task UpdateAsync(TEntity entity)
         {
            _set.Update(entity);
-            return await _dbContext.SaveChangesAsync();
+            //return await _dbContext.SaveChangesAsync();
         }
     }
 }

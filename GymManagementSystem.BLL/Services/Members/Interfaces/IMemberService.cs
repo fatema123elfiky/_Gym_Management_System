@@ -17,5 +17,7 @@ namespace GymManagementSystem.BLL.Services.Members.Interfaces
         public Task<MemberToUpdateViewModel?> GetMemberToUpdateDetails(int ? Id);
         public Task<bool> UpdateMemberAsync(MemberToUpdateViewModel model);
 
+        public Task<bool> DeleteMemberAsync(int? Id);
+
     }
 }

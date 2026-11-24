@@ -40,6 +40,7 @@ namespace GymManagementSystem.MVC
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>)); // whatever any entity passed to it
             builder.Services.AddScoped<IPlanRepository, PlanRepository>();
             builder.Services.AddScoped<IMemberService, MemberService>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             var app = builder.Build();
 

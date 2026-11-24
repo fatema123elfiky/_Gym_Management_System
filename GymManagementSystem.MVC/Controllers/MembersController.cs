@@ -103,6 +103,24 @@ namespace GymManagementSystem.PL.Controllers
 
         }
 
+        public async Task<IActionResult> Delete(int ? Id)
+        {
+            return View(Id);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteConfirmed(int ? Id)
+        {
+            var result = await _memberService.DeleteMemberAsync(Id);
+            if (result)
+            {
+                TempData["SuccessMessage"] = "Member is deleted successfuly";// goes from request to request which gone 
+                return RedirectToAction(nameof(Index));
+            }
+            TempData["ErrorMessage"] = "Member Deletion failed";
+            return View(nameof(Index));
+        }
+
 
     }
 }

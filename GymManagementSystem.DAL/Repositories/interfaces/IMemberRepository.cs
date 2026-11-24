@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GymManagementSystem.DAL.Repositories.interfaces
 {
-    internal interface IMemberRepository : IRepository<Member>
+    public interface IMemberRepository : IRepository<Member>
     {
         public IQueryable<Member> GetMemberWithRelatedData(int id);
     }

@@ -11,8 +11,8 @@ namespace GymManagementSystem.DAL.Repositories.interfaces
     {
         public Task<IEnumerable<TEntity>> GetAllAsync(bool tracking = false);
         public Task<TEntity?> GetByIdAsync(int id);
-        public Task<int> AddAsync(TEntity plan);
-        public Task<int> UpdateAsync(TEntity plan);
-        public Task<int> DeleteAsync(TEntity plan);
+        public Task AddAsync(TEntity plan);
+        public Task UpdateAsync(TEntity plan);
+        public Task DeleteAsync(TEntity plan);
     }
 }
