@@ -1,4 +1,5 @@
-﻿using GymManagementSystem.BLL.Services.Members.Interfaces;
+﻿using AutoMapper;
+using GymManagementSystem.BLL.Services.Members.Interfaces;
 using GymManagementSystem.BLL.Services.Members.ViewModels;
 using GymManagementSystem.DAL.Models;
 using GymManagementSystem.DAL.Repositories.interfaces;
@@ -27,10 +28,12 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
 
         // using unit of work 
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public MemberService(IUnitOfWork unitOfWork)
+        public MemberService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<bool> AddMemberAsync(CreateMemberViewModel model)
@@ -43,28 +46,29 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
                 bool IsNotUniqueEmail = members.Any(x => x.Email == model.Email);
 
                 if (IsNotUniqueEmail || IsNotUniquePhone) return false;
-                var member = new Member()
-                {
-                    Name = model.Name,
-                    Email = model.Email,
-                    DateOfBirth = model.DateOfBirth,
-                    Gender = model.Gender,
-                    Phone = model.Phone,
-                    Address = new Address()
-                    {
-                        BuildingNumber = model.BuildingNumber,
-                        City = model.City,
-                        Street = model.City
-                    },
-                    HealthRecord = new HealthRecord()
-                    {
-                        BloodType = model.HealthRecordViewModel.BloodType,
-                        Height = model.HealthRecordViewModel.Height,
-                        Weight = model.HealthRecordViewModel.Weight,
-                        Note = model.HealthRecordViewModel.Note
-                    }
+                //var member = new Member()
+                //{
+                //    Name = model.Name,
+                //    Email = model.Email,
+                //    DateOfBirth = model.DateOfBirth,
+                //    Gender = model.Gender,
+                //    Phone = model.Phone,
+                //    Address = new Address()
+                //    {
+                //        BuildingNumber = model.BuildingNumber,
+                //        City = model.City,
+                //        Street = model.City
+                //    },
+                //    HealthRecord = new HealthRecord()
+                //    {
+                //        BloodType = model.HealthRecordViewModel.BloodType,
+                //        Height = model.HealthRecordViewModel.Height,
+                //        Weight = model.HealthRecordViewModel.Weight,
+                //        Note = model.HealthRecordViewModel.Note
+                //    }
 
-                };
+                //};
+                var member = _mapper.Map<Member>(model);
 
                  await _unitOfWork.GetRepository<Member>().AddAsync(member) ;
                 return await _unitOfWork.SaveChangesAsync() > 0;
@@ -93,13 +97,14 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
             {
                 var healthrecord = healthrecords.Where(x => x.MemberId == Id).FirstOrDefault();
                 if (healthrecord != null)
-                    return new HealthRecordViewModel()
-                    {
-                        BloodType = healthrecord.BloodType,
-                        Height = healthrecord.Height,
-                        Weight = healthrecord.Weight,
-                        Note = healthrecord.Note
-                    };
+                    //return new HealthRecordViewModel()
+                    //{
+                    //    BloodType = healthrecord.BloodType,
+                    //    Height = healthrecord.Height,
+                    //    Weight = healthrecord.Weight,
+                    //    Note = healthrecord.Note
+                    //};
+                    return _mapper.Map<HealthRecordViewModel>(healthrecord);
             }
             return null;
         }
@@ -111,36 +116,38 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
             var member = await _unitOfWork.GetRepository<Member>().GetByIdAsync(Id.Value);// as it is nullable and it should take value anyway
             if (member == null)
                 return null;
-            var model = new MemberDetailsViewModel()
-            {
-                Email = member.Email,
-                Gender = member.Gender.ToString(),
-                Phone = member.Phone,
-                Photo = member.Photo,
-                Name = member.Name,
-                DateOfBirth = member.DateOfBirth.ToString("d/M/yyyy"),
-                Address = $"{member.Address?.BuildingNumber} - {member.Address?.Street} - {member.Address?.City}",
-               
-                // we could not do that as by default it does not load the navigation properties
-                // and we could not edit in generic repo to include the related navigation properties
-                // so we could do special repo for member in that case to get related data or make many requests to each table
-                // which are membership , plan 
-                
-                // if we made first way , so we would leave the three lines of code as they will be correct
-                // but we remove them if we applied the second one 
 
-                // which is better 
-                // one request with related data so joins
-                // or many requests better than join ? depends on size of data, so  both are fine
-                // if data large so joins better as one request , but if small data use many requests
-                // perfomance point of view
+            // manual mapping
+            //var model = new MemberDetailsViewModel()
+            //{
+            //    Email = member.Email,
+            //    Gender = member.Gender.ToString(),
+            //    Phone = member.Phone,
+            //    Photo = member.Photo,
+            //    Name = member.Name,
+            //    DateOfBirth = member.DateOfBirth.ToString("d/M/yyyy"),
+            //    Address = $"{member.Address?.BuildingNumber} - {member.Address?.Street} - {member.Address?.City}",
 
-                //MembershipStartDate = member.MemberShips.Where(x => x.IsActive).Select(x => x.CreatedAt).FirstOrDefault().ToString(),
-                //MembershipEndDate = member.MemberShips.Where(x => x.IsActive).Select(x => x.CreatedAt).FirstOrDefault().ToString()
-                //PlanName = member.MemberShips.Where(x => x.IsActive).Select(x => x.Plan.Name).FirstOrDefault()
+            //    // we could not do that as by default it does not load the navigation properties
+            //    // and we could not edit in generic repo to include the related navigation properties
+            //    // so we could do special repo for member in that case to get related data or make many requests to each table
+            //    // which are membership , plan 
 
-            };
+            //    // if we made first way , so we would leave the three lines of code as they will be correct
+            //    // but we remove them if we applied the second one 
 
+            //    // which is better 
+            //    // one request with related data so joins
+            //    // or many requests better than join ? depends on size of data, so  both are fine
+            //    // if data large so joins better as one request , but if small data use many requests
+            //    // perfomance point of view
+
+            //    //MembershipStartDate = member.MemberShips.Where(x => x.IsActive).Select(x => x.CreatedAt).FirstOrDefault().ToString(),
+            //    //MembershipEndDate = member.MemberShips.Where(x => x.IsActive).Select(x => x.CreatedAt).FirstOrDefault().ToString()
+            //    //PlanName = member.MemberShips.Where(x => x.IsActive).Select(x => x.Plan.Name).FirstOrDefault()
+
+            //};
+            var model = _mapper.Map<MemberDetailsViewModel>(member);// map to dest type from source 
             var memberships = await _unitOfWork.GetRepository<MemberShip>().GetAllAsync();
             if (memberships.Any())
             {
@@ -190,16 +197,18 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
 
             // some better mapping using select
 
-            return members.Select(x => new MemberViewModel()
-            {
-                Id = x.Id,
-                Email = x.Email,
-                Gender = x.Gender.ToString(),
-                Phone = x.Phone,
-                Photo = x.Photo,
-                Name = x.Name
+            //return members.Select(x => new MemberViewModel()
+            //{
+            //    Id = x.Id,
+            //    Email = x.Email,
+            //    Gender = x.Gender.ToString(),
+            //    Phone = x.Phone,
+            //    Photo = x.Photo,
+            //    Name = x.Name
 
-            });
+            //});
+
+            return _mapper.Map<IEnumerable<MemberViewModel>>(members);
 
 
         }
@@ -212,19 +221,20 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
             if (member == null)
                 return null;
 
-            var model = new MemberToUpdateViewModel()
-            {
-                Id = member.Id,
-                Email = member.Email,
-                Phone = member.Phone,
-                Photo = member.Photo,
-                Name = member.Name,
-                BuildingNumber = member.Address?.BuildingNumber??0,
-                City = member.Address?.City??"Not found",
-                Street = member.Address?.Street ?? "Not found"
+            //var model = new MemberToUpdateViewModel()
+            //{
+            //    Id = member.Id,
+            //    Email = member.Email,
+            //    Phone = member.Phone,
+            //    Photo = member.Photo,
+            //    Name = member.Name,
+            //    BuildingNumber = member.Address?.BuildingNumber??0,
+            //    City = member.Address?.City??"Not found",
+            //    Street = member.Address?.Street ?? "Not found"
 
-            };
-            return model;
+            //};
+
+            return _mapper.Map<MemberToUpdateViewModel>(member);
         }
 
         public async Task<bool> UpdateMemberAsync(MemberToUpdateViewModel model)
@@ -244,13 +254,15 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
 
                 if (member == null) return false;
 
-                member.Address.BuildingNumber = model.BuildingNumber;
-                member.Address.City = model.City;
-                member.Address.Street = model.Street;
-                member.Email = model.Email;
-                member.Phone = model.Phone;
+                //member.Address.BuildingNumber = model.BuildingNumber;
+                //member.Address.City = model.City;
+                //member.Address.Street = model.Street;
+                //member.Email = model.Email;
+                //member.Phone = model.Phone;
 
-                 await _unitOfWork.GetRepository<Member>().UpdateAsync(member) ;
+                //var mapped = _mapper.Map<Member>(model);
+                var mapped = _mapper.Map(model, member);
+                 await _unitOfWork.GetRepository<Member>().UpdateAsync(mapped) ;
 
                 return await _unitOfWork.SaveChangesAsync() > 0;
 

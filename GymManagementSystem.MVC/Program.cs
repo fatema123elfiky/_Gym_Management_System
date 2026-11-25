@@ -1,5 +1,8 @@
+using GymManagementSystem.BLL.Profiles;
 using GymManagementSystem.BLL.Services.Members.Classes;
 using GymManagementSystem.BLL.Services.Members.Interfaces;
+using GymManagementSystem.BLL.Services.Sessions.Classes;
+using GymManagementSystem.BLL.Services.Sessions.Interfaces;
 using GymManagementSystem.DAL.Data.Contexts;
 using GymManagementSystem.DAL.Models;
 using GymManagementSystem.DAL.Repositories.Classes;
@@ -41,6 +44,11 @@ namespace GymManagementSystem.MVC
             builder.Services.AddScoped<IPlanRepository, PlanRepository>();
             builder.Services.AddScoped<IMemberService, MemberService>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<ISessionRepository, SessionRepository>();
+            builder.Services.AddScoped<IMemberRepository, MemberRepository>();
+            builder.Services.AddScoped<ISessionService, SessionService>();
+            builder.Services.AddAutoMapper(x=>x.AddProfile(new MemberProfiles()));
+            builder.Services.AddAutoMapper(x=>x.AddProfile(new SessionProfile()));
 
             var app = builder.Build();
 
