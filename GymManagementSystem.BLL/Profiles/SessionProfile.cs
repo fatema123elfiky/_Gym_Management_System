@@ -15,9 +15,9 @@ namespace GymManagementSystem.BLL.Profiles
         {
             // i think because it is navigational so we should doo that and  we could add the part of avaliable slots but advanced
             // will be discussed later
-            CreateMap<Session,SessionViewModels>()
-                .ForMember(dest => dest.TrainerName , opt=>opt.MapFrom(src=>src.Trainer.Name))
-                .ForMember(dest => dest.CategoryName , opt=>opt.MapFrom(src=>src.Category.CategoryName))
+            CreateMap<Session, SessionViewModels>()
+                .ForMember(dest => dest.TrainerName, opt => opt.MapFrom(src => src.Trainer.Name))
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName));
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿
 
+using GymManagementSystem.BLL.Common;
 using GymManagementSystem.BLL.Services.Members.ViewModels;
 
 
@@ -7,17 +8,17 @@ namespace GymManagementSystem.BLL.Services.Members.Interfaces
 {
     public interface IMemberService
     {
-        public Task<IEnumerable<MemberViewModel>> GetMembersAsync();
-        public Task<bool> AddMemberAsync(CreateMemberViewModel model);
-        public Task<MemberDetailsViewModel?> GetMemberAsync(int? Id);
+        public Task<Result<IEnumerable<MemberViewModel>>> GetMembersAsync();
+        public Task<Result> AddMemberAsync(CreateMemberViewModel model);
+        public Task<Result<MemberDetailsViewModel?>> GetMemberAsync(int? Id);
 
-        public Task<HealthRecordViewModel?> GetHealthRecordDetails(int? Id);
+        public Task<Result<HealthRecordViewModel?>> GetHealthRecordDetails(int? Id);
         
         // we made new one as the mapping is different from details one
-        public Task<MemberToUpdateViewModel?> GetMemberToUpdateDetails(int ? Id);
-        public Task<bool> UpdateMemberAsync(MemberToUpdateViewModel model);
+        public Task<Result<MemberToUpdateViewModel?>> GetMemberToUpdateDetails(int ? Id);
+        public Task<Result> UpdateMemberAsync(MemberToUpdateViewModel model);
 
-        public Task<bool> DeleteMemberAsync(int? Id);
+        public Task<Result> DeleteMemberAsync(int? Id);
 
     }
 }

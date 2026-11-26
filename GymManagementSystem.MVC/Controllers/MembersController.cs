@@ -1,5 +1,6 @@
 ﻿using GymManagementSystem.BLL.Services.Members.Interfaces;
 using GymManagementSystem.BLL.Services.Members.ViewModels;
+using GymManagementSystem.MVC.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using System.Runtime.CompilerServices;
 
@@ -17,8 +18,9 @@ namespace GymManagementSystem.PL.Controllers
         }
         public async Task<IActionResult> Index()
         {
-            var members = await _memberService.GetMembersAsync();
-            return View(members);
+            var result = await _memberService.GetMembersAsync();
+            return result.Success ? View(result.Value) : RedirectToAction(nameof(Index), nameof(HomeController));
+           
         }
 
         // two create actions just for view and adding members
@@ -39,52 +41,52 @@ namespace GymManagementSystem.PL.Controllers
             if (!ModelState.IsValid) return View(nameof(Create),model);// takes name of view , model
 
             // 2) Business rules (service)
-            bool created = await _memberService.AddMemberAsync(model);
+            var result = await _memberService.AddMemberAsync(model);
 
-            if (created)
+            if (result.Success)
             {
                 TempData["SuccessMessage"] = "Member is created successfuly";// goes from request to request which gone 
                 return RedirectToAction(nameof(Index));
             }
-            TempData["ErrorMessage"] = "Member creation failed";
+            TempData["ErrorMessage"] = result.error;
             return View(nameof(Create), model);// takes name of view , model
         }
 
         public async Task<IActionResult> Details(int ? Id)
         {
-            var member = await _memberService.GetMemberAsync(Id);
-            if(member == null)
+            var result = await _memberService.GetMemberAsync(Id);
+            if(!result.Success)
             {
-                TempData["ErrorMessage"] = "Member Not found";
+                TempData["ErrorMessage"] = result.error;
                 return RedirectToAction(nameof(Index));
 
             }
 
-            return View(member);
+            return View(result.Value);
         }
 
         public async Task<IActionResult> HealthRecordDetails(int ? Id)
         {
-            var healthrecord = await _memberService.GetHealthRecordDetails(Id);
-            if(healthrecord == null)
+            var result = await _memberService.GetHealthRecordDetails(Id);
+            if(!result.Success)
             {
-                TempData["ErrorMessage"] = "Has No healthrecord";
+                TempData["ErrorMessage"] = result.error;
                 return RedirectToAction(nameof(Index));
             }
 
-            return View(healthrecord);
+            return View(result.Value);
         }
 
         public async Task<IActionResult> EditMember(int ? Id)
         {
-            var member = await _memberService.GetMemberToUpdateDetails(Id);
-            if (member == null)
+            var result = await _memberService.GetMemberToUpdateDetails(Id);
+            if (!result.Success)
             {
-                TempData["ErrorMessage"] = "Member Not found";
+                TempData["ErrorMessage"] = result.error;
                 return RedirectToAction(nameof(Index));
 
             }
-            return View(member);
+            return View(result.Value);
 
         }
 
@@ -93,12 +95,12 @@ namespace GymManagementSystem.PL.Controllers
         {
             if (!ModelState.IsValid) return View(nameof(EditMember), model);// takes name of view , model
             var result = await _memberService.UpdateMemberAsync(model);
-            if(result)
+            if(result.Success)
             {
                 TempData["SuccessMessage"] = "Member is edited successfuly";// goes from request to request which gone 
                 return RedirectToAction(nameof(Index));
             }
-            TempData["ErrorMessage"] = "Member editing failed";
+            TempData["ErrorMessage"] = result.error;
             return View(nameof(EditMember), model);
 
         }
@@ -112,12 +114,12 @@ namespace GymManagementSystem.PL.Controllers
         public async Task<IActionResult> DeleteConfirmed(int ? Id)
         {
             var result = await _memberService.DeleteMemberAsync(Id);
-            if (result)
+            if (result.Success)
             {
                 TempData["SuccessMessage"] = "Member is deleted successfuly";// goes from request to request which gone 
                 return RedirectToAction(nameof(Index));
             }
-            TempData["ErrorMessage"] = "Member Deletion failed";
+            TempData["ErrorMessage"] = result.error;
             return View(nameof(Index));
         }
 

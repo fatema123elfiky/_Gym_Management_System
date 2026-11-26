@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using GymManagementSystem.BLL.Common;
 using GymManagementSystem.BLL.Services.Members.Interfaces;
 using GymManagementSystem.BLL.Services.Members.ViewModels;
 using GymManagementSystem.DAL.Models;
@@ -6,6 +7,7 @@ using GymManagementSystem.DAL.Repositories.interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -36,7 +38,7 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
             _mapper = mapper;
         }
 
-        public async Task<bool> AddMemberAsync(CreateMemberViewModel model)
+        public async Task<Result> AddMemberAsync(CreateMemberViewModel model)
         {
             try
             {
@@ -45,7 +47,11 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
                 bool IsNotUniquePhone = members.Any(x => x.Phone == model.Phone);
                 bool IsNotUniqueEmail = members.Any(x => x.Email == model.Email);
 
-                if (IsNotUniqueEmail || IsNotUniquePhone) return false;
+                if (IsNotUniqueEmail)
+                    return Result.Fail("Email Already exist");
+
+                if (IsNotUniquePhone)
+                    return Result.Fail("Phone Already exist");
                 //var member = new Member()
                 //{
                 //    Name = model.Name,
@@ -71,26 +77,40 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
                 var member = _mapper.Map<Member>(model);
 
                  await _unitOfWork.GetRepository<Member>().AddAsync(member) ;
-                return await _unitOfWork.SaveChangesAsync() > 0;
+                
+                var result = await _unitOfWork.SaveChangesAsync() > 0;
+                return result ? Result.OK() : Result.Fail("Member is not added");
             }
             catch
             {
-                return false;
+                return Result.Fail("Internal Server Error");
             }
         }
 
-        public async Task<bool> DeleteMemberAsync(int? Id)
+        public async Task<Result> DeleteMemberAsync(int? Id)
         {
-            if (Id == null || Id.Value == 0) return false;
-            var member = await _unitOfWork.GetRepository<Member>().GetByIdAsync(Id.Value);
+            try
+            {
+                if (Id == null || Id.Value == 0)
+                    return Result.Fail("Id not found");
 
-            if (member == null) return false;
+                var member = await _unitOfWork.GetRepository<Member>().GetByIdAsync(Id.Value);
 
-             await _unitOfWork.GetRepository<Member>().DeleteAsync(member);
-            return await  _unitOfWork.SaveChangesAsync() > 0;
+                if (member == null)
+                    return Result.Fail("Member not found");
+
+
+                await _unitOfWork.GetRepository<Member>().DeleteAsync(member);
+                var result = await _unitOfWork.SaveChangesAsync() > 0;
+                return result ? Result.OK() : Result.Fail("Member can not be deleted");
+            }
+            catch
+            {
+                return Result.Fail("Internal Server Error");
+            }
         }
 
-        public async Task<HealthRecordViewModel?> GetHealthRecordDetails(int? Id)
+        public async Task<Result<HealthRecordViewModel?>> GetHealthRecordDetails(int? Id)
         {
             var healthrecords = await _unitOfWork.GetRepository<HealthRecord>().GetAllAsync();
             if (healthrecords != null)
@@ -104,18 +124,20 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
                     //    Weight = healthrecord.Weight,
                     //    Note = healthrecord.Note
                     //};
-                    return _mapper.Map<HealthRecordViewModel>(healthrecord);
+                    return Result<HealthRecordViewModel?>.OK(_mapper.Map<HealthRecordViewModel>(healthrecord));
             }
-            return null;
+            return Result<HealthRecordViewModel?>.Fail("Health record not found");
         }
 
-        public async Task<MemberDetailsViewModel?> GetMemberAsync(int? Id)
+        public async Task<Result<MemberDetailsViewModel?>> GetMemberAsync(int? Id)
         {
             if (Id == null || Id.Value == 0)
-                return null;
+                return Result<MemberDetailsViewModel?>.Fail("Id not found");
+
             var member = await _unitOfWork.GetRepository<Member>().GetByIdAsync(Id.Value);// as it is nullable and it should take value anyway
+            
             if (member == null)
-                return null;
+                return Result<MemberDetailsViewModel?>.Fail("Member not found");
 
             // manual mapping
             //var model = new MemberDetailsViewModel()
@@ -169,10 +191,10 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
                 }
             }
 
-            return model;
+            return Result<MemberDetailsViewModel?>.OK(model);
         }
 
-        public async Task<IEnumerable<MemberViewModel>> GetMembersAsync()
+        public async Task<Result<IEnumerable<MemberViewModel>>> GetMembersAsync()
         {
            // return await _memberRepository.GetAllAsync();
            var members = await _unitOfWork.GetRepository<Member>().GetAllAsync();
@@ -208,18 +230,20 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
 
             //});
 
-            return _mapper.Map<IEnumerable<MemberViewModel>>(members);
+            return Result<IEnumerable<MemberViewModel>>.OK(_mapper.Map<IEnumerable<MemberViewModel>>(members));
 
 
         }
 
-        public async Task<MemberToUpdateViewModel?> GetMemberToUpdateDetails(int? Id)
+        public async Task<Result<MemberToUpdateViewModel?>> GetMemberToUpdateDetails(int? Id)
         {
             if (Id == null || Id.Value == 0)
-                return null;
+                return Result<MemberToUpdateViewModel?>.Fail("Id not found");
+
             var member = await _unitOfWork.GetRepository<Member>().GetByIdAsync(Id.Value);// as it is nullable and it should take value anyway
             if (member == null)
-                return null;
+                return Result<MemberToUpdateViewModel?>.Fail("Member not found");
+
 
             //var model = new MemberToUpdateViewModel()
             //{
@@ -234,25 +258,31 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
 
             //};
 
-            return _mapper.Map<MemberToUpdateViewModel>(member);
+            return Result<MemberToUpdateViewModel?>.OK(_mapper.Map<MemberToUpdateViewModel>(member));
         }
 
-        public async Task<bool> UpdateMemberAsync(MemberToUpdateViewModel model)
+        public async Task<Result> UpdateMemberAsync(MemberToUpdateViewModel model)
         {
             try
             {
-                if (model == null) return false;
+                if (model == null) 
+                    return Result.Fail("Model not found");
+
 
                 var members = await _unitOfWork.GetRepository<Member>().GetAllAsync();
 
                 bool IsNotUniquePhone = members.Any(x => x.Phone == model.Phone && x.Id != model.Id);
                 bool IsNotUniqueEmail = members.Any(x => x.Email == model.Email && x.Id != model.Id);
 
-                if (IsNotUniqueEmail || IsNotUniquePhone) return false;
+                if (IsNotUniqueEmail)
+                    return Result.Fail("Email Already exist");
+
+                if (IsNotUniquePhone)
+                    return Result.Fail("Phone Already exist");
 
                 var member = await _unitOfWork.GetRepository<Member>().GetByIdAsync(model.Id);
 
-                if (member == null) return false;
+                if (member == null) return Result.Fail("Member not found");
 
                 //member.Address.BuildingNumber = model.BuildingNumber;
                 //member.Address.City = model.City;
@@ -263,13 +293,13 @@ namespace GymManagementSystem.BLL.Services.Members.Classes
                 //var mapped = _mapper.Map<Member>(model);
                 var mapped = _mapper.Map(model, member);
                  await _unitOfWork.GetRepository<Member>().UpdateAsync(mapped) ;
-
-                return await _unitOfWork.SaveChangesAsync() > 0;
+                var result = await _unitOfWork.SaveChangesAsync() > 0;
+                return result ? Result.OK() : Result.Fail("Member can not be updated");
 
             }
             catch
             {
-                return false;
+                return Result.Fail("Internal Server Error");
             }
         }
     }
