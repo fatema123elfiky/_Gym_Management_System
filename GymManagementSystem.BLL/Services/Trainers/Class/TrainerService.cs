@@ -23,6 +23,25 @@ namespace GymManagementSystem.BLL.Services.Trainers.Class
             _mapper = mapper;
         }
 
+        public async Task<Result> AddTrainerAsync(CreateTrainerViewModel model)
+        {
+            var trainers = await _unitOfWork.GetRepository<Trainer>().GetAllAsync();
+            bool checkPhone = trainers.Any(tr => tr.Phone == model.Phone);
+            bool checkEmail = trainers.Any(tr => tr.Email == model.Email);
+
+            if (checkPhone)
+                return Result.Fail("Phone is not unique");
+            if(checkEmail)
+                return Result.Fail("Email is not unique");
+
+            var mappedtrainer = _mapper.Map<Trainer>(model);
+
+            await _unitOfWork.GetRepository<Trainer>().AddAsync(mappedtrainer);
+            var result = await _unitOfWork.SaveChangesAsync() > 0;
+
+            return result ? Result.OK() : Result.Fail("failed to add trainer");
+        }
+
         public async Task<Result<IEnumerable<TrainerViewModel>>> GetAllTrainersAsync()
         {
             var trainers = await _unitOfWork.GetRepository<Trainer>().GetAllAsync();

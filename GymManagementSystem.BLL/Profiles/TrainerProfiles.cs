@@ -15,7 +15,13 @@ namespace GymManagementSystem.BLL.Profiles
         {
             CreateMap<Trainer, TrainerViewModel>()
                 .ForMember(dest => dest.Specialty, opt => opt.MapFrom(src => src.Specialty.ToString()));
-
+            CreateMap<CreateTrainerViewModel, Trainer>()
+                .AfterMap((src, dest) => dest.Address = new Address()
+                {
+                    BuildingNumber = src.BuildingNumber,
+                    City = src.City,
+                    Street = src.Street
+                });
         }
     }
 }

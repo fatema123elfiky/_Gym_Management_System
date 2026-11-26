@@ -11,5 +11,7 @@ namespace GymManagementSystem.BLL.Services.Trainers.Interfaces
     public interface ITrainerService
     {
         public  Task<Result<IEnumerable<TrainerViewModel>>> GetAllTrainersAsync();
+
+        public Task<Result> AddTrainerAsync(CreateTrainerViewModel model);
     }
 }
