@@ -48,5 +48,16 @@ namespace GymManagementSystem.PL.Controllers
             TempData["FailedMessage"] = result.error;
             return View(nameof(Create),model);
         }
+
+        public async Task<IActionResult> Details(int Id)
+        {
+            var result = await _trainerService.GetTrainerDetails(Id);
+            if (result.Success)
+            {
+                return View(result.Value);
+            }
+            TempData["FailedMessage"] = result.error;
+            return View(nameof(Index));
+        }
     }
 }

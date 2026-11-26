@@ -23,7 +23,7 @@ namespace GymManagementSystem.PL.Controllers
         }
 
         public async Task<IActionResult> Create()
-        {                                                                                       // what we take - what we display
+        {                                                                                       
             await LoadTrainerandCategoryForSelectedList();
             return View();
 
@@ -49,6 +49,7 @@ namespace GymManagementSystem.PL.Controllers
         #region Helper Methods
         private async Task LoadTrainerandCategoryForSelectedList()
         {
+                                                                                                // what we take - what we display
             ViewBag.Trainers = new SelectList((await _sessionService.GetTrainerForDropDownAsync()).Value, "Id", "Name");
             ViewBag.Categories = new SelectList((await _sessionService.GetCategoryForDropDownAsync()).Value, "Id", "CategoryName");
 

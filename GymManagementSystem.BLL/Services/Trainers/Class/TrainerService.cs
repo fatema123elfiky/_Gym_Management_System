@@ -4,11 +4,7 @@ using GymManagementSystem.BLL.Services.Trainers.Interfaces;
 using GymManagementSystem.BLL.Services.Trainers.ViewModels;
 using GymManagementSystem.DAL.Models;
 using GymManagementSystem.DAL.Repositories.interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace GymManagementSystem.BLL.Services.Trainers.Class
 {
@@ -50,6 +46,16 @@ namespace GymManagementSystem.BLL.Services.Trainers.Class
             return Result<IEnumerable<TrainerViewModel>>.OK(mapped);
 
 
+        }
+
+        public async Task<Result<TrainerDetailsViewModel>> GetTrainerDetails(int Id)
+        {
+            var trainer = await  _unitOfWork.GetRepository<Trainer>().GetByIdAsync(Id);
+            if (trainer == null)
+                return Result<TrainerDetailsViewModel>.NotFound("trainer not found");
+            var mapped = _mapper.Map<TrainerDetailsViewModel>(trainer);
+
+            return Result<TrainerDetailsViewModel>.OK(mapped);
         }
     }
 }
